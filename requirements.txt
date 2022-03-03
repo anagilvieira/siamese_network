@@ -1,0 +1,51 @@
+# precise-stroke/dataset.py: 1
+# precise-stroke/preprocess_dataset.py: 9
+# precise-stroke/transforms.py: 1
+nibabel == 3.2.0
+
+# precise-stroke/dataset.py: 8
+numpy == 1.19.4
+
+# precise-stroke/optimize.py: 6,7
+optuna == 2.3.0
+
+# precise-stroke/dataset.py: 5
+pandas == 1.1.4
+
+# precise-stroke/main.py: 2,6
+# precise-stroke/model_lightning.py: 5,7
+# precise-stroke/optimize.py: 9,15
+# precise-stroke/preprocess_dataset.py: 3
+pytorch-lightning == 1.0.8
+
+# precise-stroke/dataset.py: 11
+sklearn == 0.0
+
+# precise-stroke/dataset.py: 3,4
+# precise-stroke/main.py: 5,9
+# precise-stroke/model_lightning.py: 2,3,4
+# precise-stroke/models/ex_amd.py: 1,2
+# precise-stroke/models/resnet3d.py: 4,5,6
+# precise-stroke/models/same_rankin.py: 1,2,4
+# precise-stroke/models/unet.py: 1,2,4
+# precise-stroke/optimize.py: 5,16
+# precise-stroke/preprocess_dataset.py: 2,6
+torch == 1.7.0
+
+# precise-stroke/dataset.py: 10
+torchio == 0.17.53
+
+# precise-stroke/main.py: 8
+# precise-stroke/preprocess_dataset.py: 5
+torchvision == 0.8.1
+
+# precise-stroke/model_lightning.py: 8
+wandb == 0.10.10
+
+imageio~=2.9.0
+scipy~=1.6.0
+Pillow~=8.1.0
+matplotlib~=3.4.1
+scikit-image~=0.18.3
+scikit-learn~=0.24.1
+torchmetrics~=0.3.2
