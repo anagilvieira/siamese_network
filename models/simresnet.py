@@ -1,6 +1,8 @@
-import torch
 import torch.nn as nn
 from . import utils
+import torch
+import numpy as np
+from data_transformations import Flip_Brain
 
 
 def conv3x3(in_planes, out_planes, stride=1):
@@ -84,14 +86,14 @@ class Bottleneck(nn.Module):
         out += residual
 
         return out
-    
+
 
 @utils.register_model
-class ResNet(nn.Module):
-    def __init__(self, num_layers=50, block=Bottleneck, image_channels=1, num_classes=2, zero_init_residual=False):
+class SimResNet(nn.Module):
+    def __init__(self, num_layers=18, block=BasicBlock, image_channels=1, num_classes=2, zero_init_residual=False):
         assert num_layers in [18, 34, 50, 101, 152]
 
-        super(ResNet, self).__init__()        
+        super(SimResNet, self).__init__()        
         if num_layers == 18:
             layers = [2, 2, 2, 2]
         elif num_layers == 34 or num_layers == 50:
@@ -114,6 +116,8 @@ class ResNet(nn.Module):
 
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
         self.fc = nn.Linear(512 * block.expansion, num_classes)
+        self.fc1 = nn.Linear(512, 256)
+        self.fc2 = nn.Linear(256, num_classes)
 
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
@@ -147,20 +151,42 @@ class ResNet(nn.Module):
         return nn.Sequential(*layers)
 
 
-    def forward(self, x):
-        x = x.float()
-        x = self.conv1(x)
-        x = self.bn1(x)
-        x = self.relu(x)
-        x = self.maxpool(x)
+    def forward(self, x1, x2):
+        #x2 = Flip_Brain(x1)
+        #x2 = np.array(x2)
+        #x2 = torch.tensor(x2, device='cuda', requires_grad=True).unsqueeze(1)
 
-        x = self.layer1(x)
-        x = self.layer2(x)
-        x = self.layer3(x)
-        x = self.layer4(x)
+        x1 = x1.float()
+        x1 = self.conv1(x1)
+        x1 = self.bn1(x1)
+        x1 = self.relu(x1)
+        x1 = self.maxpool(x1)
 
-        x = self.avgpool(x)
-        x = torch.flatten(x, 1)
-        x = self.fc(x)
+        x1 = self.layer1(x1)
+        x1 = self.layer2(x1)
+        x1 = self.layer3(x1)
+        x1 = self.layer4(x1)
+        
+        #x1 = self.avgpool(x1)
+        #x1 = torch.flatten(x1, 1)
 
-        return x
+        x2 = x2.float()
+        x2 = self.conv1(x2)
+        x2 = self.bn1(x2)
+        x2 = self.relu(x2)
+        x2 = self.maxpool(x2)
+
+        x2 = self.layer1(x2)
+        x2 = self.layer2(x2)
+        x2 = self.layer3(x2)
+        x2 = self.layer4(x2)
+
+        #x2 = self.avgpool(x2)
+        #x2 = torch.flatten(x2, 1)
+
+        distance = torch.abs(x1 - x2)
+        output = self.avgpool(distance)
+        output = self.fc1(output)
+        output = self.fc2(output)
+
+        return output

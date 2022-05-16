@@ -24,7 +24,7 @@ class GradCAM(object):
         verbose (bool): whether to print output size of the saliency map givien 'layer_name' and 'input_size' in model_dict.
     """
     def __init__(self, model_dict, verbose=False):
-        model_type = model_dict['type']
+        self.model_type = model_dict['type']
         layer_name = model_dict['layer_name']
         self.model_arch = model_dict['arch']
 
@@ -33,13 +33,14 @@ class GradCAM(object):
         def backward_hook(module, grad_input, grad_output):
             self.gradients['value'] = grad_output[0]
             return None
-        def forward_hook(module, input, output):
+        
+        def forward_hook(module, input1, output):
             self.activations['value'] = output
             return None
 
-        if 'resnet' in model_type.lower():
+        if 'resnet' in self.model_type.lower():
             target_layer = find_resnet_layer(self.model_arch, layer_name)
-        elif 'siamese' in model_type.lower():
+        elif 'siamese' in self.model_type.lower():
             target_layer = find_siamese_layer(self.model_arch, layer_name)
 
         target_layer.register_forward_hook(forward_hook)
@@ -53,8 +54,10 @@ class GradCAM(object):
                 pass
             else:
                 device = 'cuda' if next(self.model_arch.parameters()).is_cuda else 'cpu'
-                #self.model_arch(torch.zeros(1, 1, *(input_size), device=device), torch.zeros(1, 1, *(input_size), device=device))
-                self.model_arch(torch.zeros(1, 1, *(input_size), device=device))
+                if self.model_type == 'siamese':
+                    self.model_arch(torch.zeros(1, 1, *(input_size), device=device))
+                else:
+                    self.model_arch(torch.zeros(1, 1, *(input_size), device=device))
                 print('saliency_map size :', self.activations['value'].shape[2:])
 
 
@@ -70,22 +73,19 @@ class GradCAM(object):
         """
         
         b, c, h, w = input.size()
-
-        #logit = self.model_arch(input, input)  # Siamese Network
-        logit = self.model_arch(input)  # ResNet
+        
+        if self.model_type == 'siamese':
+            logit = self.model_arch(input)  # Siamese Network
+        else:
+            logit = self.model_arch(input)  # ResNet
+            
         if class_idx is None:
             score = logit[:, logit.max(1)[-1]].squeeze()
-            print(class_idx)
-            #score.requires_grad = True
         else:
             score = logit[:, class_idx].squeeze()
-            #score.requires_grad = True
 
         self.model_arch.zero_grad()
-
-        #score.retain_grad()
         score.backward(torch.ones_like(score), retain_graph=retain_graph)
-        #score.backward(retain_graph=retain_graph)
         gradients = self.gradients['value']
         activations = self.activations['value']
         b, k, u, v = gradients.size()
@@ -96,7 +96,7 @@ class GradCAM(object):
 
         saliency_map = (weights*activations).sum(1, keepdim=True)
         saliency_map = F.relu(saliency_map)
-        saliency_map = F.upsample(saliency_map, size=(h, w), mode='bilinear', align_corners=False)
+        saliency_map = F.interpolate(saliency_map, size=(h, w), mode='bilinear', align_corners=False)
         saliency_map_min, saliency_map_max = saliency_map.min(), saliency_map.max()
         saliency_map = (saliency_map - saliency_map_min).div(saliency_map_max - saliency_map_min).data
 

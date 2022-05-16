@@ -25,20 +25,18 @@ class Dataset(data.Dataset):
 
     def load_images_from_folder(self, id, idx):
         folder = self.directory
-        #for id in sorted(os.listdir(f'{folder}'), key=lambda x: int(os.path.splitext(x)[0])):
         for filename in sorted(os.listdir(f'{folder}{id}'), key=lambda x: int(os.path.splitext(x)[0])):
             if filename.endswith(".png"):
                 im = Image.open(f'{folder}{id}/{filename}')
                 img = np.array(im, dtype=np.uint8)
                 # print(img.shape)  # (512, 512)
                 self.images.append(img)
-        #img_data = np.array(self.images, dtype=np.uint8)
-        # print("Shape of data:", img_data.shape)  # list of images (n_images, 512, 512)
+        #img_data = np.array(self.images, dtype=np.uint8)  # list of images (n_images, 512, 512)
         #masked_image = self.remove_noise(img_data, idx)
         #masked_image = np.array(masked_image, dtype=np.uint8)
         #rotated_image = self.rotate_image(masked_image, idx)
         #rotated_image = np.array(rotated_image, dtype=np.uint8)
-        #croped_image = self.crop(rotated_image, idx)
+        #croped_image = self.crop(img_data, idx)
         #self.final_image = self.padding(croped_image, idx)
         #self.final_image = np.array(self.final_image, dtype=np.uint8)
         self.final_image = np.array(self.images, dtype=np.uint8)

@@ -18,8 +18,9 @@ class Dataset(data.Dataset):
     def load_data(self, id):
         image = torch.load(f'{savepath}/{id}')  # pasta onde estão guardados os dados processados
         if self.transform:
-            image = (image - image.min()) / (image.max() - image.min())  #MinMaxScaler
+            #image = trans.ToPILImage()(image)
             image = self.transform(image)
+            #image = (image - image.min()) / (image.max() - image.min())  #MinMaxScaler
         return image
 
     def __len__(self):
@@ -63,20 +64,36 @@ def load_data_set(directory):
 
     # print("Informação clínica:", count, "pacientes")
     # print(ids_with_label)
-    # print("Dados da classe 1:", count_class_1, "\nDados da classe 0:", count_class_0)
+    print("Dados da classe 1:", count_class_1, "\nDados da classe 0:", count_class_0)
 
     return ids_with_label, labels
 
 
-train_augment = trans.Compose([trans.ToTensor(), trans.RandomVerticalFlip(p=1), trans.RandomRotation(degrees=(0, 180))])
+# Data Agumentation 1:
+#train_augment = trans.Compose([trans.ToTensor(), trans.RandomVerticalFlip(p=1), trans.RandomRotation(degrees=(0, 180))])
+
+# Data Augmentation 2:
+#train_augment = trans.Compose([trans.ToTensor(), trans.GaussianBlur(kernel_size=(5, 9), sigma=(0.1, 5))])
+
+# Data Augmentation 3:
+#train_augment = trans.Compose([trans.ToTensor(), trans.RandomVerticalFlip(p=1)])
+
+# Data Augmentation 4:
+#train_augment = trans.Compose([trans.ToTensor(), trans.RandomRotation(degrees=(0, 180))])
+
 transformation = trans.Compose([trans.ToTensor()])
 
-def get_data_sets(directory, train_size=0.8, val_size=0.2, test_size=0.2, seed=37):
+def get_data_sets(directory, train_size=0.8, val_size=0.2, test_size=0.2, seed=None):
     ids, labels = load_data_set(directory)
-    train, test = train_test_split(ids, test_size=test_size, random_state=seed)  # conjunto teste é 20% do dataset (ids)
-    train, val = train_test_split(train, test_size=val_size, random_state=seed)  # conjunto validação é 20% do conjunto de treino
     
-    return (
-        Dataset(train, labels, directory, transform=transformation),
-        Dataset(val, labels, directory, transform=transformation),
-        Dataset(test, labels, directory, transform=transformation))
+    # ---------- TRAIN-VALIDATION-TEST SPLIT ----------
+    #train, test = train_test_split(ids, test_size=test_size, random_state=seed)  # conjunto teste é 20% do dataset (ids)
+    #train, val = train_test_split(train, test_size=val_size, random_state=seed)  # conjunto validação é 20% do conjunto de treino
+    
+    #return (
+    #    Dataset(train, labels, directory, transform=transformation),
+    #    Dataset(val, labels, directory, transform=transformation),
+    #    Dataset(test, labels, directory, transform=transformation))
+    
+    # ---------- K-FOLD CROSS VALIDATION ----------
+    return(Dataset(ids, labels, directory, transform=transformation))
