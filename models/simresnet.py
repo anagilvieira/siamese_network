@@ -90,7 +90,7 @@ class Bottleneck(nn.Module):
 
 @utils.register_model
 class SimResNet(nn.Module):
-    def __init__(self, num_layers=18, block=BasicBlock, image_channels=1, num_classes=2, zero_init_residual=False):
+    def __init__(self, num_layers=50, block=Bottleneck, image_channels=1, num_classes=2, zero_init_residual=False):
         assert num_layers in [18, 34, 50, 101, 152]
 
         super(SimResNet, self).__init__()        
@@ -116,8 +116,6 @@ class SimResNet(nn.Module):
 
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
         self.fc = nn.Linear(512 * block.expansion, num_classes)
-        self.fc1 = nn.Linear(512, 256)
-        self.fc2 = nn.Linear(256, num_classes)
 
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
@@ -167,8 +165,8 @@ class SimResNet(nn.Module):
         x1 = self.layer3(x1)
         x1 = self.layer4(x1)
         
-        #x1 = self.avgpool(x1)
-        #x1 = torch.flatten(x1, 1)
+        x1 = self.avgpool(x1)
+        x1 = x1.view(x1.size(0), -1)
 
         x2 = x2.float()
         x2 = self.conv1(x2)
@@ -181,12 +179,10 @@ class SimResNet(nn.Module):
         x2 = self.layer3(x2)
         x2 = self.layer4(x2)
 
-        #x2 = self.avgpool(x2)
-        #x2 = torch.flatten(x2, 1)
+        x2 = self.avgpool(x2)
+        x2 = x2.view(x2.size(0), -1)
 
         distance = torch.abs(x1 - x2)
-        output = self.avgpool(distance)
-        output = self.fc1(output)
-        output = self.fc2(output)
+        output = self.fc(distance)
 
         return output
