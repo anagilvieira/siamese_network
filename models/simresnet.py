@@ -150,10 +150,6 @@ class SimResNet(nn.Module):
 
 
     def forward(self, x1, x2):
-        #x2 = Flip_Brain(x1)
-        #x2 = np.array(x2)
-        #x2 = torch.tensor(x2, device='cuda', requires_grad=True).unsqueeze(1)
-
         x1 = x1.float()
         x1 = self.conv1(x1)
         x1 = self.bn1(x1)
