@@ -6,4 +6,4 @@ The image processing folder contains the files:
 - skull_stripping.py: file that receives the CT brain scans in NIfTI format (.nii), removes the non-brain tissue and converts the 3D data to 2D, saving the images in .png.
 - head_tilt_correction.py: receives the images (.png) and corrects the head tilt. The images resulting from this process constitute the final images used for training and testing.
 
-The stratified 5-fold cross validation method was used to train the models. The selection of the samples is done according to the file Asymmetry2_v2.xlsx, where the slices are grouped by folders (in a total of 5).
+The stratified 5-fold cross validation method was used to train the models. The selection of the samples is done according to the file Asymmetry2_v2.xlsx, where the slices are grouped by folders (in a total of 5). For anonymization reasons, the file is not available.
